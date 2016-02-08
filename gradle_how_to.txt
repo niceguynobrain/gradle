@@ -1,0 +1,18 @@
+Basic Gradle files:
+
+	Shell script (?)
+
+	"./gradlew " is the gradle wrapper 
+	Tasks command using the gradle wrapper "./gradlew tasks"
+		this gives a list of all the tasks gradle knows about
+	Use the wrapper to run a task: " <wrapper> <task> "
+	i.e. " ./gradlew hello"
+
+Gradle Daemon:
+	'A daemon is process which hangs around in the back ground 
+	of an opperating system doing something useful,
+	when gradle is instructed to use a daemon, a daemon process
+	is started and runs in the back-ground.'
+
+
+
