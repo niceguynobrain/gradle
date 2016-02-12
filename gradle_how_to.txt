@@ -1,7 +1,32 @@
+// Commands:
+
+	// To run a build, run 
+	gradle <task> ...
+
+	//To see a list of available tasks, run 
+	gradle tasks
+
+	//To see a list of command-line options, run 
+	gradle --help
+
+	//To see more detail about a task, run 
+	gradle help --task <task>
+
+	// specifies the build file	for that task. 
+	gradle -b <file_name.gradle> <task_name>
+	
+	// runs in quite mode, giving just the output.
+	gradle -q <task_name>
+
+
+
+/*
 Basic Gradle files:
 
 	Shell script (?)
+*/
 
+/*
 Hello World:
 	"./gradlew " is the gradle wrapper 
 	A wrapper contains just enough info to run a task.
@@ -10,27 +35,91 @@ Hello World:
 
 	With gradle installed I can use "gradle <task_name>",
 	there is no need for the wrapper.
+*/
 
+/*
 Gradle Daemon:
 	'A daemon is process which hangs around in the back ground 
 	of an opperating system doing something useful,
 	when gradle is instructed to use a daemon, a daemon process
 	is started and runs in the back-ground.'
 	In short: A daemon makes gradle run faster. 
+*/
 
-" gradle -b <file_name.gradle> <task_name>" specifies the build file
-	for that task. 
+/*
+Groovy:
+	https://learnxinyminutes.com/docs/groovy/
+	http://groovy-lang.org/documentation.html
 
-Commands:
+	Setters and Getters:
+		Groovy assigns a setter and getter for every variable.
 
-To run a build, run gradle <task> ...
+	Delegate objects:
 
-To see a list of available tasks, run gradle tasks
+	Closure:
 
-To see a list of command-line options, run gradle --help
+	Configuration Closure:
+		Configuration closure delegates to the class object.
 
-To see more detail about a task, run gradle help --task <task>
+	Collection:
+		Needs the equals sign syntax.
+*/
 
+// Tasks (Ad-hoc tasks):
+	task <task_name>
+	<task_name>.description "this is what is shown in the task list"
+	<task_name>.group "this is the heading for the task in the task list"
+	<task_name>.doFirst{println "Do this first"} 
+	<task_name>.doLast{println "Do this last"}
+	<task_name>.leftShift{println "Do this even more last"}
+	<task_name> << {println "do this last of all"}
+	// declare a task and immediately pass it a closure.
+	task <task_name> << {
+	 "declare a task and give it an action"
+	 }
+	// decalre task and pass it a configuration closure
+	task <task_name> {
+		description "a task with a configuration block"
+		group "some group"
+		doLast {
+			println "Here's the action"
+		}
+	}
+	
+	// define what needs to have happened before a task starts.
+	// Example, task putOnShoes dependsOn task putOnSocks 
+	dependsOn "<task_name>"
+	dependsOn = ["<task_1_name>", "<task_2_name>", "<task_3_name>"]
+	
+	// define what task will run after this task
+	finalizedBy "<task_name>"
+
+	// define what task we want to run after this task, if we run two tasks
+	// then gradle will run 'shouldRunAfter' task second.
+	shouldRunAfter "<task_name>"
+
+	// define task order
+	mustRunAfter "<task_1_name>"
+	<task_2_name>.mustRunAfter "<task_1_name>"
+
+	// look at all the tasks in a project and decide which to depend on.
+	task <task_4_name> {
+		dependsOn tasks.matching {
+			task -> task.name.startsWith("partial_task_name") 
+		}
+		doLast {
+			println "All matching tasks done."
+		}
+	}
+
+// Tasks (Typed tasks):
+
+	// https://docs.gradle.org/current/dsl/org.gradle.api.Task.html
+	
+	// Giving a task a type must be done like this:
+	task <task_name>(type: "task type declaration") << {
+		println "do something"
+	}
 
 
 
