@@ -18,6 +18,11 @@
 	// runs in quite mode, giving just the output.
 	gradle -q <task_name>
 
+	// abreviate task calls, for example:
+	gradle simpleTask
+	// can be abbreviated to
+	gradle sT
+
 /*
 Basic Gradle files:
 
@@ -111,24 +116,12 @@ Groovy:
 	}
 
 // Tasks (Typed tasks):
-
-	// https://docs.gradle.org/current/dsl/org.gradle.api.Task.html
+// https://docs.gradle.org/current/dsl/org.gradle.api.Task.html
 	
 	// Giving a task a type must be done like this:
 	task <task_name>(type: "task type declaration") << {
 		println "do something"
 	}
-
-
-	// abreviate task calls, for example:
-	gradle printGreeting
-	// can be abbreviated to
-	gradle pG
-
-// Custom Typed tasks
-
-	// Define a typed task by extending a existing typed task.
-	Class <MyTask> extends <DefaultTask> {}
 
 // Properties
 	
@@ -152,6 +145,32 @@ Groovy:
 		}
 		destinationDir = <variable3>
 	}
+
+// Custom Typed tasks
+// https://docs.gradle.org/current/userguide/custom_tasks.html
+
+	// Define a typed task by extending a existing typed task,
+	// Custom tasks must implement the task interface.
+	class MyTaskClass extends DefaultTask {
+		String action
+		//  define a new method annotated with `@TaskAction`
+		@TaskAction
+		void methodName() {
+			println 'Do some $action' 
+		}
+	}
+	// declare type of task as Class 
+	task doMagic(type: MyTaskClass) {
+		action = 'magic'
+	}
+
+// Logging 
+	/* Debug> -d
+	Info> -i
+	warning lifecycle> default 
+	error / quiet / println> -q
+
+
 
 
 
