@@ -1,3 +1,14 @@
+/* Gradle is a build tool used to automate the build process. Build tools are
+	useful for automation, portability and repeatability. 
+	Build systems compile and package source code, combine code a from multiple 
+	resources, run our tests, create multiple build varients, generate 
+	documentation, publish applications and manage dependencies.
+	Gradle uses tasks, which are self-contained units of work, at the core of 
+	a task is it's action. Tasks can declare dependencies, inputs and outputs, 
+	this allows Gradle to determine if it needs to run or if the work has 
+	already been done. 
+*/
+
 // Commands:
 
 	// To run a build, run 
@@ -23,21 +34,24 @@
 	// can be abbreviated to
 	gradle sT
 
-/*
-Basic Gradle files:
-
-	Shell script (?)
-*/
 
 /*
-Hello World:
+Gradle wrapper
 	"./gradlew " is the gradle wrapper 
 	A wrapper contains just enough info to run a task.
+
+	A Gradle wrapper will check to see if Gradle is installed,
+	if it isn't the wrapper will instal Gradle. 
+
 	Use the wrapper to run a task: " <wrapper> <task> "
 	i.e. " ./gradlew hello"
 
 	With gradle installed I can use "gradle <task_name>",
 	there is no need for the wrapper.
+
+	When working on an existing Gradle project, we use the wrapper,
+	that way we can be sure everyone working on the projec is using
+	the same version of Gradle.
 */
 
 /*
@@ -46,41 +60,106 @@ Gradle Daemon:
 	of an opperating system doing something useful,
 	when gradle is instructed to use a daemon, a daemon process
 	is started and runs in the back-ground.'
+	The deamon keeps an instance of the Java Virtual Machine alive.
+	Android Studio always uses a Gradle deamon.
 	In short: A daemon makes gradle run faster. 
 */
 
 /*
-Groovy:
+Groovy and Gradle DSL:
+	Gradle is written in a purpose built build language provided by gradle,
+	which sits on top of a generic scripting language called Groovy.
+	The Gradle build language is where key words like 'android' and 'task' 
+	come from. 
+	Gradle build language is also call the Gradle DSL (domain specific language).
+	The Gradle DSL is decarative, so we're only responsible for describing the
+	build. Gradle itself knows how to make it happen. 
+	Adding low-level logic is done using plugins, which can be written in any 
+	JVM language. 
+
 	https://learnxinyminutes.com/docs/groovy/
 	http://groovy-lang.org/documentation.html
+	https://docs.gradle.org/current/dsl/
+
+	Dynamic typing:
+		Variables:
+			Can be declared by type or using the 'def' keyword.
+		Groovy code:
+			can be executed in a string using ${1 + 2}
+			can use nested function calls
 
 	Setters and Getters:
 		Groovy assigns a setter and getter for every variable.
 
-	Delegate objects:
-
-	Closure:
-
-	Configuration Closure:
-		Configuration closure delegates to the class object.
+	Higher order functions:
+		Functions which can take other functions as arguements. 
 
 	Collection:
 		Needs the equals sign syntax.
+		$item
+
+	Closure:
+		A way of declaring a function which can be packaged up and passed
+		around and assigned to variables. 
+			def myClosure = { println "hello closure"}
+		A closure captures variables from its surrounding environment.
+		If a closure only takes one arguement that by default that 
+		arguement is called $it
+
+		The Gradle DSL reference specifies which methods can be applied 
+		to closures, for example .collect generates a list.
+*/
+		// Closures can have a delegate object.
+			class MyClass {
+				String variable = "string one"
+				def myMethod() {println $variable}
+			}
+
+			def anInstanceOfMyClass = new MyClass()
+
+			def myClosure = {
+				// variable is only declared in the scope of the class MyClass.
+				variable = "string two"
+				myMethod()
+			}
+			
+			myClosure.delegate = anInstanceOfMyClass
+			// myClosure can now access the member variables and methods
+			// of that instance
+			myClosure() 
+/*
+	Delegate objects:
+	The entire build script has a delegate object which exposes the 
+	Gradle build language to the Groovy scripting language. A plugin
+	can be written in any language and use the same delegate object.
+
+	The Project Object:
+	The build script delegates to a project object.
+	All the key words in the Gradle DSL are methods of or operates on
+	the project object.
+	The project object has a method called .task 
 */
 
 // Tasks (Ad-hoc tasks):
 	task <task_name>
+	// task properties
 	<task_name>.description "this is what is shown in the task list"
 	<task_name>.group "this is the heading for the task in the task list"
+	// task list of action
 	<task_name>.doFirst{println "Do this first"} 
 	<task_name>.doLast{println "Do this last"}
 	<task_name>.leftShift{println "Do this even more last"}
 	<task_name> << {println "do this last of all"}
-	// declare a task and immediately pass it a closure.
+
+	// declare a task and immediately pass it a closure to exicute.
 	task <task_name> << {
 	 "declare a task and give it an action"
 	 }
-	// decalre task and pass it a configuration closure
+/*
+	Configuration Closure:
+		Configuration closure delegates to the task object.
+*/
+// decalre task and pass it a configuration closure
 	task <task_name> {
 		description "a task with a configuration block"
 		group "some group"
@@ -89,6 +168,11 @@ Groovy:
 		}
 	}
 	
+/* 
+Relationship between tasks
+	In a Java build we can't JAR up our libary before compiling our sources.
+	Relationships are modelled by task dependencies and order.
+*/
 	// define what needs to have happened before a task starts.
 	// Example, task putOnShoes dependsOn task putOnSocks 
 	dependsOn "<task_name>"
@@ -97,13 +181,13 @@ Groovy:
 	// define what task will run after this task
 	finalizedBy "<task_name>"
 
-	// define what task we want to run after this task, if we run two tasks
-	// then gradle will run 'shouldRunAfter' task second.
-	shouldRunAfter "<task_name>"
-
 	// define task order
 	mustRunAfter "<task_1_name>"
 	<task_2_name>.mustRunAfter "<task_1_name>"
+
+	// define what task we want to run after this task, if we run two tasks
+	// then gradle will run 'shouldRunAfter' task second.
+	shouldRunAfter "<task_name>"
 
 	// look at all the tasks in a project and decide which to depend on.
 	task <task_4_name> {
@@ -165,10 +249,15 @@ Groovy:
 	}
 
 // Logging 
-	/* Debug> -d
+	/* 
+	stacktrack> -s 
 	Info> -i
+	Debug> -d
+	---------------------------
 	warning lifecycle> default 
 	error / quiet / println> -q
+	*/
+
 
 
 
