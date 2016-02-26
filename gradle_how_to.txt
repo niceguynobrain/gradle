@@ -1,12 +1,16 @@
 /* Gradle is a build tool used to automate the build process. Build tools are
 	useful for automation, portability and repeatability. 
-	Build systems compile and package source code, combine code a from multiple 
-	resources, run our tests, create multiple build varients, generate 
-	documentation, publish applications and manage dependencies.
+	Build systems compile and package source code, combine code a from 
+	multiple resources, run our tests, create multiple build varients, 
+	generate documentation, publish applications and manage dependencies.
 	Gradle uses tasks, which are self-contained units of work, at the core of 
 	a task is it's action. Tasks can declare dependencies, inputs and outputs, 
 	this allows Gradle to determine if it needs to run or if the work has 
 	already been done. 
+*/
+
+/** User Guide:
+	replace anything inside < > with appropriate replacement.
 */
 
 // Commands:
@@ -71,7 +75,8 @@ Groovy and Gradle DSL:
 	which sits on top of a generic scripting language called Groovy.
 	The Gradle build language is where key words like 'android' and 'task' 
 	come from. 
-	Gradle build language is also call the Gradle DSL (domain specific language).
+	Gradle build language is also call the Gradle DSL (domain specific 
+	language).
 	The Gradle DSL is decarative, so we're only responsible for describing the
 	build. Gradle itself knows how to make it happen. 
 	Adding low-level logic is done using plugins, which can be written in any 
@@ -97,6 +102,7 @@ Groovy and Gradle DSL:
 	Collection:
 		Needs the equals sign syntax.
 		$item
+		myList.each {println it.name}
 
 	Closure:
 		A way of declaring a function which can be packaged up and passed
@@ -140,6 +146,7 @@ Groovy and Gradle DSL:
 	The project object has a method called .task 
 */
 
+<----------------------------------------------------------------------------->
 // Tasks (Ad-hoc tasks):
 	task <task_name>
 	// task properties
@@ -249,16 +256,203 @@ Relationship between tasks
 	}
 
 // Logging 
+TODO 
 	/* 
+	ADD LOG STATEMENTS USE 
+	println "My log statement"
+
 	stacktrack> -s 
 	Info> -i
 	Debug> -d
 	---------------------------
 	warning lifecycle> default 
-	error / quiet / println> -q
+	error / quiet / > -q
 	*/
 
+<----------------------------------------------------------------------------->
+// Running Java projects with Gradle 
+// Step 1. Plugins, Repositories and Dependencies.
+/* Learning and reference resources:
+The first is the Gradle Java Quickstart guide
+https://docs.gradle.org/current/userguide/tutorial_java_projects.html
+The Gradle user guide also has much more in-depth documentation on the Gradle
+plugin:
+https://docs.gradle.org/current/userguide/java_plugin.html
+Finally, check out the Gradle DSL reference for more info on the JavaExec task
+type:
+https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
+*/
 
+// use the plugin in the build file.
+apply plugin: "java"
+
+// use gradle comand line to build a jar
+gradle jar 
+// builds a project (with libs,classes, and dependency-cache folders,
+// and tmp folder containing a MANIFEST.MF file).
+
+// Additional info on configuration of a plugin see: exercise 2.03
+
+// Configure the main source set and resources directories
+sourceSets {
+	// include 'java' as additional source directory
+	main {
+		java {
+			scrDir 'src/java' 
+		}
+		resources {
+			scrDir 'src/resources'
+		}
+	}
+}
+
+// exercises 2.04 - 2.06 Dependencies and Repositories
+/** To add a dependecy to a gradle project we first need to declare the 
+ *	repository to fetch the dependcy from. 
+ */
+// All repository configuration is done inside a `repositories { }` script 
+// block.
+repositories {
+	// A folder of JARs is a flat directory
+    flatDir {
+    	/** This is a great option if you're migrating an existing project to 
+    	Gradle, or using a dependency that's not available from a remote 
+    	repository, but it also means you forgo a lot Gradle's advanced 
+    	dependency management features. */
+        dirs 'libs'
+    }
+
+    // Shortcut methods for commonly used repositories
+    mavenCentral()
+    mavenLocal()
+    jcenter()
+
+    // Managed dependencies from Maven and Ivy. For Maven and Ivy repositories
+    // the only configuration requirement is a location.
+ 	maven {
+ 		// Location of the repository, expressed as a URL
+        url 'https://repo.foo.org/m2'
+    }
+
+    ivy {
+        url 'https://repo.foo.org/ivy'
+        // Credentials may be required to access a repository
+        credentials {
+            username 'user'
+            password 'secret'
+        }
+    }
+
+    // Gradle also supports SFTP and file based repositories.
+    ivy {
+        url 'file:///home/user/repo'
+    }
+}
+
+/**
+Dependencies that are resolved from repositories are referred to as 'external 
+module dependencies'.
+ */
+//  Add dependencies on artifacts contained with repositories.
+
+dependencies {
+	// syntax
+	<name_of_configuration_we_want_to_add_dependency_to> '<dependeny_notation>'
+
+	// Adding a dependency on 'guava' to the 'compile' configuration.
+	// The compile configuration is added by the 'java' plugin.
+	compile 'com.google.guava:guava:18.0' 
+	/** External module dependencies are identified by their group, name and 
+	 * 	version.  Groovy map syntax can be used to identify dependencies, 
+	 * 	for example
+	 * 	compile 'com.google.guava:guava:18.0' 
+	 * 	can be expressed as the following line. */
+    compile group: 'com.google.guava', name: 'guava', version: '18.0'
+
+    // Adding files as dependencies
+    compile files('libs/foo.jar', 'libs/bar.jar') // FileCollection
+    // FileTree allows us to specify filters
+    compile fileTree(dir: 'libs', include: '*.jar') // FileTree
+}
+
+
+// Dependencies Report
+// show all
+gradle dependencies
+// show specific to one configuration
+gradle dependencies --configuration <configuration_name>
+// how one dependence is included in project
+// useful for dependency conflict resolution
+gradle depenencyInsight --dependency <dependency_name>
+/** When gradle resolves a conflict between an older and newer dependencies
+	gradle will prorities the newest version. This is indicated in the
+	dependency report like so " 1.1.3 -> 1.1.4 " 
+	The dependency report will show the dependency with ' (conflict resolved) '
+*/
+
+
+// Configurations
+/**
+	Dependencies are assigned to 'configurations'.
+	Configurations are groups of logically related dependencies.
+
+ 	java plugin configuratins: compile, runtime, testCompile, testRuntime
+	The java plugin ensures that the specified dependencies are on the class 
+	path when the corresponding tasks are run. 
+
+	Recap: dependencies can be add to any configuration 
+	<name_of_configuration_we_want_to_add_dependency_to> '<dependeny_notation>'
+
+ 	Inheritance: configurations can extend other configuratons
+ 	testCompile extends compile therefor all dependencies in compile are 
+ 	included in testCompile 
+*/
+// Custom Configurations
+configurations {
+	custom '<dependeny_notation>'
+}
+/* Configurations are just file collections and can be used anywhere a file
+ * collection can be, for example, in a copy task.
+ * This is useful if we want to download some dependencies from a remote 
+ * repository and bundle them in our project
+ */
+task copyDependencies(type: Copy) {
+	from configurations.custom
+	into 'build.libs'
+}
+
+// https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.Configuration.html
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    deps // Create 'deps' configuration
+    compile.extendsFrom deps // Make 'compile' extend from 'deps'
+}
+
+dependencies {
+    deps 'com.google.guava:guava:19.0' // Add 'guava' dependency
+}
+
+
+task zipDeps(type: Zip) { // Zip task to bundle dependencies from 'deps'
+	// archieve named "dependencyArchive-appendix-1-deps.zip"
+    baseName = "dependencyArchive"
+    appendix = 'appendix'
+    version 1
+    classifier = 'deps'
+    extension = 'zip'
+
+    from configurations.deps // creates dependencies folder 
+}
+
+
+
+<----------------------------------------------------------------------------->
 
 
 
