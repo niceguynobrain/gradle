@@ -38,25 +38,53 @@
 	// can be abbreviated to
 	gradle sT
 
+	// testing with the java plugin, run test code in src/test
+	gradle test
+
 
 /*
 Gradle wrapper
-	"./gradlew " is the gradle wrapper 
-	A wrapper contains just enough info to run a task.
 
+	"./gradlew " is the gradle wrapper 
+
+	A wrapper contains just enough info to run a task.
+	When working on an existing Gradle project, we use the wrapper,
+	that way we can be sure everyone working on the projec is using
+	the same version of Gradle.
+
+	The gradle wrapper puts the build tool under version control,
+	so everyone building a project is using the exact same tool.
+	The gradle wrapper is compose for four files, a jar, a properties
+	file, a shell script for Unix and Mac and a batch script for windows.
+
+*/
+
+// Create a wrapper
+gradle wrapper
+
+/* 
 	A Gradle wrapper will check to see if Gradle is installed,
 	if it isn't the wrapper will instal Gradle. 
 
 	Use the wrapper to run a task: " <wrapper> <task> "
 	i.e. " ./gradlew hello"
-
-	With gradle installed I can use "gradle <task_name>",
-	there is no need for the wrapper.
-
-	When working on an existing Gradle project, we use the wrapper,
-	that way we can be sure everyone working on the projec is using
-	the same version of Gradle.
 */
+
+// Set the gradleVersion using the wrapper in build.gradle
+wrapper {
+	gradleVersion = '2.2.1'
+}
+
+// show which version of gradle is in use.
+./gradlew --version
+
+// gradle configuration is stored in gradle/wrapper/gradle-wrapper.properties 
+// to use the Beta version of gradle visit:
+URL = 'http://gradle.org/gradle-nightly-build/'
+
+
+
+
 
 /*
 Gradle Daemon:
@@ -272,19 +300,62 @@ TODO
 <----------------------------------------------------------------------------->
 // Running Java projects with Gradle 
 // Step 1. Plugins, Repositories and Dependencies.
+
+/* Plugins
+	https://docs.gradle.org/current/userguide/standard_plugins.html
+	
+
 /* Learning and reference resources:
-The first is the Gradle Java Quickstart guide
+
+	Gradle Java Quickstart guide
 https://docs.gradle.org/current/userguide/tutorial_java_projects.html
-The Gradle user guide also has much more in-depth documentation on the Gradle
-plugin:
+
+	The Gradle user guide also has much more in-depth documentation on the 
+	Gradle plugin:
 https://docs.gradle.org/current/userguide/java_plugin.html
-Finally, check out the Gradle DSL reference for more info on the JavaExec task
-type:
+
+	The Gradle DSL reference for more info on the JavaExec task type:
 https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
 */
 
+/* 
+	Java build process:
+
+	compile -> jar -> documentation -> test -> report
+
+	The Java plugin creates tasks fro each of these steps and sets up the 
+	neccessary dependencies for us.
+	A typical java project will usually invole:
+	compiling source code and processing rescources, and packaging those 
+	resources and java class files into a jar.
+	It can also include test code which will need to be compiled and the tests 
+	ran. 
+	Gradle creates lifecycle tasks to describe common build outputs such as 
+	assembing our artifacts, running checks, or doing a complete build.
+
+											->process test resources
+			-> check -> test -> testClasses 
+											->compile test java
+	build
+											->process resources
+			-> assemble -> jar -> classes 
+											->compile java
+
+	Common Tasks:
+	assemble - create the output (usually a jar)
+	check - runs any tests we've setup
+	build - runs assemble and check
+	clean - deletes all the build output
+
+
+*/
 // use the plugin in the build file.
 apply plugin: "java"
+
+task execute(type: JavaExec) {
+	main = "com.andrewparkerdev.gradle.ClassName"
+	classpath = sourceSets.main.runtimeClasspath	
+}
 
 // use gradle comand line to build a jar
 gradle jar 
@@ -323,9 +394,12 @@ repositories {
     }
 
     // Shortcut methods for commonly used repositories
-    mavenCentral()
-    mavenLocal()
-    jcenter()
+    repositories {
+	    mavenCentral()
+	    mavenLocal()
+	    jcenter()
+	}
+
 
     // Managed dependencies from Maven and Ivy. For Maven and Ivy repositories
     // the only configuration requirement is a location.
@@ -450,10 +524,29 @@ task zipDeps(type: Zip) { // Zip task to bundle dependencies from 'deps'
     from configurations.deps // creates dependencies folder 
 }
 
-
-
 <----------------------------------------------------------------------------->
 
+// Testing with the java plugin
+/** 
 
+	Unit tests test individual classes or methods in isolation
+	Intergration tests test code in conjunction with other system, libary or
+	environment. 
+
+	Place tests in the src/test java folder.
+	To change this location by configuring the tests source set.
+	To run the tests just use the command:
+	gradle test
+	Reports on the tests are generated in the build/reports/test/index.html file
+*/
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	testCompile group: 'junit', name: 'junit', version: '4.12'
+}
 
 
