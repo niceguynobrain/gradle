@@ -10,6 +10,7 @@
 */
 
 /** User Guide:
+	For Syntax highlighting set to groovy syntax.
 	replace anything inside < > with appropriate replacement.
 */
 
@@ -352,6 +353,7 @@ https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
 // use the plugin in the build file.
 apply plugin: "java"
 
+// Execute Java using the built in JavaExec task type.
 task execute(type: JavaExec) {
 	main = "com.andrewparkerdev.gradle.ClassName"
 	classpath = sourceSets.main.runtimeClasspath	
@@ -485,7 +487,8 @@ gradle depenencyInsight --dependency <dependency_name>
 configurations {
 	custom '<dependeny_notation>'
 }
-/* Configurations are just file collections and can be used anywhere a file
+/**
+ Configurations are just file collections and can be used anywhere a file
  * collection can be, for example, in a copy task.
  * This is useful if we want to download some dependencies from a remote 
  * repository and bundle them in our project
@@ -495,7 +498,7 @@ task copyDependencies(type: Copy) {
 	into 'build.libs'
 }
 
-// https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.Configuration.html
+https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.Configuration.html
 
 apply plugin: 'java'
 
@@ -537,7 +540,7 @@ task zipDeps(type: Zip) { // Zip task to bundle dependencies from 'deps'
 	To change this location by configuring the tests source set.
 	To run the tests just use the command:
 	gradle test
-	Reports on the tests are generated in the build/reports/test/index.html file
+	Reports on the tests are generated in the build/reports/test/index.html 
 */
 apply plugin: 'java'
 
@@ -548,5 +551,281 @@ repositories {
 dependencies {
 	testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+<----------------------------------------------------------------------------->
+// Gradle in Android Studio
+// Importing / Exporting
+/**
+Import:
+	First, import build.gradle
+	second, refresh gradle properties tab to see tasks
+	Third, run the wrapper task
+	Finally, sync the build from the gradle projects tab to incorporate any 
+	additions to the code.
+*/
+
+// The Gradle Wrapper, recap.
+/**
+Using the Gradle wrapper (instead of the local Gradle installation) ensures 
+that you always run the version of Gradle defined in the local.properties 
+file. To configure your project to use a newer version of Gradle, edit the 
+properties file and specify the new version there. 
+*/
+
+// Application modules
+/**
+
+
+•Android application modules contain application code and may depend on library
+	modules, although many Android apps consist of only one application module.
+	The build system generates APK packages for application modules. 
+•Android library modules contain reusable Android-specific code and resources. 
+	The build system generates an AAR (Android ARchive) package for library 
+	modules.
+•App Engine modules contain code and resources for App Engine integration.
+•Java library modules contain reusable code. The build system generates a JAR 
+	package for Java library modules.
+
+*/
+
+// Gradle application plugin
+// Android plugin
+http://tools.android.com/tech-docs/new-build-system/user-guide
+https://developer.android.com/tools/building/plugin-for-gradle.html
+
+// The build.gradle file is the root for the project
+// Top-level build file where you can add configuration options common to all
+// sub-projects/modules.
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+/*
+
+Second this block adds the jcenter repository to every subproject of the
+build. 
+
+*/
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+//  The application module Gradle build file. 
+// The android/app folder contains build.gradle for android 
+/**
+•android settings 
+	◦compileSdkVersion
+	◦buildToolsVersion
+•defaultConfig and productFlavors 
+	◦manifest properties such as applicationId, minSdkVersion, 
+		targetSdkVersion, and test information
+•buildTypes
+	◦build properties such as debuggable, ProGuard enabling, debug signing, 
+		version name suffix and testinformation
+•dependencies
+*/
+
+apply plugin: 'com.android.application'
+
+android {
+	// •android settings
+	// compileSdkVersion and buildToolsVersion are manditory. 
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+    	// •defaultConfig and productFlavors
+        applicationId "com.andrewparkerdev.snake"
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    // Build types are defined in the `buildTypes { }` script block.
+    buildTypes {
+    	// •buildTypes
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 
+            	'proguard-rules.pro'
+        }
+
+        debug {
+        	//  Set the application id suffix for the 'debug' build type 
+        	// to 'debug'.
+            applicationIdSuffix "debug"
+            // Set debuggable to false for release builds. 
+            debuggable false 
+        }
+    }
+    /* Flavors are similar to build types except they are typically used to 
+    create different versions of our app that users might install. A very 
+    common example is creating both a free and paid version of your app.
+
+	The Android plugin does not create any product flavors for us by default. 
+	To declare some flavors we do so just like we do with build types, except 
+	that we place them in a `productFlavors { }` script block. Each with a 
+	unique application ID */
+    productFlavors {
+        free {
+        	// unique application ID 
+            applicationId "com.example.udacity.declaringflavors.free"
+        }
+        paid {
+        	// unique application ID 
+            applicationId "com.example.udacity.declaringflavors.paid"
+        }
+    }
+}
+
+dependencies {
+	// •dependencies
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:support-v4:23.1.1'
+    compile 'com.google.android.gms:play-services:8.4.0'
+ 	compile project(path: ':app2', configuration: 'android-endpoints')
+}
+
+
+
+
+// Build Varients 
+// In Android Studio the Build Varients tab is on the lower left hand side.
+// This is were we can choose which flavour varient to work with. 
+// When we declare new flavours Android Stuido creates new source sets for us 
+// were we can place flavour specific code and resources. 
+// 		For example app/paid/res/values/strings.xml 
+/** 
+Source Sets:
+// Default
+Main
+// Product flavour 
+Paid 
+Free 
+// Build type
+Debug 
+Release 
+// Final varient
+Paid Debug 
+Paid Release
+Free Debug
+Free Release
+*/
+
+// Android pluign Tasks
+assemble 
+	Builds the project output. 
+	◦assembleDebug
+	◦assembleRelease
+
+check 
+	Runs checks and tests.
+
+build 
+	Runs both assemble and check. 
+
+clean 
+	Performs the clean.
+
+// The Android plugin provides the connectedCheck and deviceCheck tasks for 
+// checks run on connected, emulated, and remote devices.
+check
+		◦lint
+	•connectedCheck
+		◦connectedAndroidTest
+	•deviceCheck
+		◦This depends on tasks created when other plugins implement test 
+			extension points.
+// tasks for installing and uninstalling all build types which can be 
+// installed (which requires signing), e.g.
+•installDebug
+•installRelease
+•uninstallAll
+	◦uninstallDebug
+	◦uninstallRelease
+	◦uninstallDebugAndroidTest
+
+// Android DSL
+•minSdkVersion
+•targetSdkVersion
+•versionCode
+•versionName
+•applicationId (the effective packageName)
+•testApplicationId (used by the test APK)
+•testInstrumentationRunner
+
+// The power of putting these manifest properties in the build file is that 
+// the values can be chosen dynamically. For instance, one could be reading 
+// the version name from a file or using other custom logic.
+
+// You can inject custom build logic for property values defined by a function 
+// that gets called by the property, for example: 
+def computeVersionName() {
+  ...
+}
+
+android {
+    defaultConfig {
+        versionName computeVersionName()
+        ...
+    }
+}
+
+
+// Resource Merging. 
+// Build variants enable you to reuse common activities, application logic, 
+// and resources across different versions of your app.
+/**
+Resources are merged across the multiple Android application sources: 
+	•Build variants based on the buildType, and productFlavor build settings
+	•The main sourceSet, generally located in src/main/res
+	•Library Project dependencies, which contribute resources through the res 
+		entry in their aar bundle. 
+		// AAR (Android ARchive) package for library modules.
+
+The priority of the merge order from lowest to highest is 
+	libraries/dependencies -> main src -> productFlavor -> buildType.
+*/
+/** Gradle will start from Main. 
+For a Paid Debug varient, Gradle will start with everything in the main folder 
+then merge in everything in the Paid directory, then merge in eveything is the 
+debug directory, Gradle will merge the sources and resources from each source 
+set into the final APK overriding each time. 
+	Clarification: build type resources override those from the product flavor,
+	which override the resources in the main source directory, which override 
+	those in any libraries.
+Gradle will override resources needed in more than one 
+configuration. (The more specific configurations override the less specific 
+configurations.) Java source files cannot be overriden. (Don't define the same 
+class definition in multiple varients.) String files and Manifest files will 
+be merged and the entries overriden by ID. 
+*/
+
+Image: 
+C:\Users\Andrew Parker\.gradle\wrapper\dists\gradle-2.2.1-all\c64ydeuardnfqctvr1gm30w53\gradle-2.2.1\docs\userguide\img
+
+
+
+<!-- continue from 3.08* --> 
+
+
+
+
 
 
